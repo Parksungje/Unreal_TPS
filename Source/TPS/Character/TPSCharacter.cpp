@@ -22,7 +22,7 @@ ATPSCharacter::ATPSCharacter()
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -99.0f, -00.0f));
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshRef(TEXT(
-		"/Script/Engine.SkeletalMesh'/Game/Art/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple'"));
+		"/Script/Engine.SkeletalMesh'/Game/MilitaryCharDark/MW_Style2_Male.MW_Style2_Male'"));
 	if (MeshRef.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(MeshRef.Object);
@@ -46,6 +46,15 @@ ATPSCharacter::ATPSCharacter()
 	if (IMCDefaultRef.Succeeded())
 	{
 		IMCDefault = IMCDefaultRef.Object;
+	}
+
+	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimInstanceRef(TEXT(
+		"/Script/Engine.AnimBlueprint'/Game/Animation/ABP_Character.ABP_Character_C'"));
+	if (AnimInstanceRef.Succeeded())
+	{
+		GetMesh()->SetAnimClass(AnimInstanceRef.Class);
 	}
 
 	static ConstructorHelpers::FObjectFinder<UInputAction> JumpActionRef(TEXT(
