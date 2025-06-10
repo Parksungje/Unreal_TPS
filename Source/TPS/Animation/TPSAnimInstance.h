@@ -21,6 +21,13 @@ public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
+public:
+	void PlayFireMontage();
+
+protected:
+	UPROPERTY(BlueprintReadOnly,EditAnywhere, Category = Montage)
+	TObjectPtr<class UAnimMontage> FireMontage;
+
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<class ATPSCharacter> Character;
