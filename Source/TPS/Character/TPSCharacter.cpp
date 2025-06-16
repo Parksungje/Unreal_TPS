@@ -9,6 +9,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Animation/TPSAnimInstance.h"
+#include "Engine/SkeletalMeshSocket.h"
+#include "Weapon/Weapon.h"
 
 // Sets default values
 ATPSCharacter::ATPSCharacter()
@@ -24,7 +26,7 @@ ATPSCharacter::ATPSCharacter()
 	GetMesh()->SetRelativeRotation(FRotator(0.0f, -99.0f, -00.0f));
 
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshRef(TEXT(
-		"/Script/Engine.SkeletalMesh'/Game/MilitaryCharDark/MW_Style2_Male.MW_Style2_Male'"));
+		"/Script/Engine.SkeletalMesh'/Game/Art/MilitaryCharDark/MW_Style2_Male.MW_Style2_Male'"));
 	if (MeshRef.Succeeded())
 	{
 		GetMesh()->SetSkeletalMesh(MeshRef.Object);
@@ -41,6 +43,10 @@ ATPSCharacter::ATPSCharacter()
 	//Camera
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	Camera->SetupAttachment(SpringArm);
+
+	//Weapon class
+	static ConstructorHelpers::FClassFinder<AWeapon> WeaponClassRef(TEXT(
+		"/Script/Engine.Blueprint'/Game/BluePrints/BP_Weapon.BP_Weapon_C'"));
 
 #pragma region InputSystem
 	static ConstructorHelpers::FObjectFinder<UInputMappingContext> IMCDefaultRef(TEXT(
@@ -102,6 +108,16 @@ ATPSCharacter::ATPSCharacter()
 // Called when the game starts or when spawned
 void ATPSCharacter::BeginPlay()
 {
+	//Spawn Weapon
+	if (WeaponClass)
+	{
+		AttachWeapon(WeaponClass);
+	}
+	else
+	{
+		AttachWeapon(AWeapon::StaticClass());
+	}
+
 	Super::BeginPlay();
 	GetCharacterMovement()->MaxWalkSpeed = 300.0f;
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
@@ -149,6 +165,22 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 			&ATPSCharacter::Input_Fire);
 	}
 
+}
+
+void ATPSCharacter::AttachWeapon(TSubclassOf<class AWeapon> NewWeapon)
+{
+	if (NewWeapon)
+	{
+		FActorSpawnParameters PawnParams;
+		PawnParams.Owner = this;
+		EquipWeapon = GetWorld()->SpawnActor<AWeapon>(NewWeapon, PawnParams);
+
+		const USkeletalMeshSocket* WeaponSocket = GetMesh()->GetSocketByName("WeaponSocket");
+		if (WeaponSocket && EquipWeapon)
+		{
+			WeaponSocket->AttachActor(EquipWeapon, GetMesh());
+		}
+	}
 }
 
 void ATPSCharacter::Input_Move(const FInputActionValue& InputValue)
