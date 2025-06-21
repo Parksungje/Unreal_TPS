@@ -20,6 +20,7 @@ ABullet::ABullet()
 
 	meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	meshComponent->SetupAttachment(GetRootComponent());
+	meshComponent->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 	meshComponent->SetRelativeLocation(FVector(-5.0f, 0.0f, 0.0f));
 
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshRef(TEXT("/Script/Engine.StaticMesh'/Game/Art/FPS_Weapon_Bundle/Weapons/Meshes/Ammunition/SM_Shell_12Gauge.SM_Shell_12Gauge_G'"));
