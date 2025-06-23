@@ -28,9 +28,16 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* 
 		PlayerInputComponent) override;
+public:
+
+	void AttachWeapon(TSubclassOf<class AWeapon> NewWeapon);
 
 public:
-	void AttachWeapon(TSubclassOf<class AWeapon> NewWeapon);
+	void StartReloading();
+	void FinishReloading();
+
+protected:
+	UPROPERTY();
 
 protected:
 	UPROPERTY(EditAnywhere, Category = Weapon)
@@ -52,6 +59,7 @@ public:
 	void Input_Turn(const FInputActionValue& InputValue);
 	void Input_Sprint(const FInputActionValue& InputValue);
 	void Input_Fire(const FInputActionValue& InputValue);
+	void Input_Reload(const FInputActionValue& InputValue);
 
 protected:
 	UPROPERTY(EditAnywhere, Category = Input)
@@ -71,6 +79,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = Input)
 	TObjectPtr<class UInputAction> FireAction;
+
+	UPROPERTY(EditAnywhere, Category = Input)
+	TObjectPtr<class UInputAction> ReloadAction;
 #pragma endregion
 
 };

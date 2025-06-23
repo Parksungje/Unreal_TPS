@@ -99,6 +99,12 @@ ATPSCharacter::ATPSCharacter()
 	{
 		FireAction = FireActionRef.Object;
 	}
+	static ConstructorHelpers::FObjectFinder<UInputAction> ReloadActionRef(TEXT(
+		"/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Fire.IA_Fire'"));
+	if (ReloadActionRef.Succeeded())
+	{
+		ReloadAction = ReloadActionRef.Object;
+	}
 #pragma endregion
 
 }
@@ -161,8 +167,10 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 			&ATPSCharacter::Input_Sprint);
 		EnhanedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this,
 			&ATPSCharacter::Input_Sprint);
-		EnhanedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this,
+		EnhanedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this,
 			&ATPSCharacter::Input_Fire);
+		EnhanedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this,
+			&ATPSCharacter::Input_Reload);
 	}
 
 }
@@ -181,6 +189,24 @@ void ATPSCharacter::AttachWeapon(TSubclassOf<class AWeapon> NewWeapon)
 			WeaponSocket->AttachActor(EquipWeapon, GetMesh());
 		}
 	}
+}
+
+void ATPSCharacter::StartReloading()
+{
+	UTPSAnimInstance* AnimInstance = Cast<UTPSAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance == nullptr)
+		return;
+
+	AnimInstance->PlayReloadMontage();
+}
+
+void ATPSCharacter::FinishReloading()
+{
+	UTPSAnimInstance* AnimInstance = Cast<UTPSAnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance == nullptr)
+		return;
+
+	AnimInstance->StopAllMontages(false);
 }
 
 void ATPSCharacter::Input_Move(const FInputActionValue& InputValue)
@@ -203,11 +229,11 @@ void ATPSCharacter::Input_Sprint(const FInputActionValue& InputValue)
 {
 	if (InputValue.Get<bool>())
 	{
-		GetCharacterMovement()->MaxWalkSpeed = 600.0f;
+		GetCharacterMovement()->MaxWalkSpeed = 2000.0f;
 	}
 	else
 	{
-		GetCharacterMovement()->MaxWalkSpeed = 300.0f;
+		GetCharacterMovement()->MaxWalkSpeed = 5000.0f;
 	}
 }
 
@@ -218,5 +244,10 @@ void ATPSCharacter::Input_Fire(const FInputActionValue& InputValue)
 	{
 		AnimInstance->PlayFireMontage();
 	}
+}
+
+void ATPSCharacter::Input_Reload(const FInputActionValue& InputValue)
+{
+	StartReloading();
 }
 

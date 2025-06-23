@@ -6,11 +6,13 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/Character.h"
+#include "Particles/ParticleSystem.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ABullet::ABullet()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("Collision"));
@@ -18,30 +20,38 @@ ABullet::ABullet()
 	SphereCollision->SetSphereRadius(6.0f);
 	SphereCollision->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
 
-	meshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	meshComponent->SetupAttachment(GetRootComponent());
-	meshComponent->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
-	meshComponent->SetRelativeLocation(FVector(-5.0f, 0.0f, 0.0f));
+	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
+	MeshComponent->SetupAttachment(GetRootComponent());
+	MeshComponent->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
+	MeshComponent->SetRelativeLocation(FVector(-5.0f, 0.0f, 0.0f));
+	MeshComponent->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshRef(TEXT("/Script/Engine.StaticMesh'/Game/Art/FPS_Weapon_Bundle/Weapons/Meshes/Ammunition/SM_Shell_12Gauge.SM_Shell_12Gauge_G'"));
-	if (MeshRef.Object)
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshRef(TEXT("/Script/Engine.StaticMesh'/Game/_Art/FPS_Weapon_Bundle/Weapons/Meshes/Ammunition/SM_Shell_40mm_G.SM_Shell_40mm_G'"));
+	if (MeshRef.Succeeded())
 	{
-		meshComponent->SetStaticMesh(MeshRef.Object);
+		MeshComponent->SetStaticMesh(MeshRef.Object);
 	}
 
-	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectilMovement"));
+	MovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 	MovementComponent->SetUpdatedComponent(GetRootComponent());
 	MovementComponent->InitialSpeed = InitSpeed;
 	MovementComponent->MaxSpeed = MaxSpeed;
 	MovementComponent->bRotationFollowsVelocity = false;
 	MovementComponent->bShouldBounce = false;
+
+	static ConstructorHelpers::FObjectFinder<UParticleSystem> HitEffectRef(TEXT("/Script/Engine.ParticleSystem'/Game/_Art/Effect/PT_Effect.PT_Effect'"));
+	if (HitEffectRef.Succeeded())
+	{
+		HitEffect = HitEffectRef.Object;
+	}
 }
 
 // Called when the game starts or when spawned
 void ABullet::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	SphereCollision->OnComponentHit.AddDynamic(this, &ABullet::OnBulletHit);
 }
 
 // Called every frame
@@ -54,5 +64,24 @@ void ABullet::Tick(float DeltaTime)
 void ABullet::Fire(const FVector& Direction) const
 {
 	MovementComponent->Velocity = Direction * MovementComponent->InitialSpeed;
+}
+
+void ABullet::PlayHitEffect(FTransform HitTransform)
+{
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffect, HitTransform);
+}
+
+void ABullet::OnBulletHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, FVector NormalImpulse,
+	const FHitResult& Hit)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Cyan,
+		FString::Printf(TEXT("BULLET Hit")));
+
+	FTransform BulletTransform;
+	BulletTransform.SetLocation(Hit.ImpactPoint);
+	PlayHitEffect(BulletTransform);
+
+	Destroy();
 }
 

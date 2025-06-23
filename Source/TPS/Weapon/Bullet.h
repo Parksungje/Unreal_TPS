@@ -10,8 +10,8 @@ UCLASS()
 class TPS_API ABullet : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	ABullet();
 
@@ -19,22 +19,31 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 public:
 	void Fire(const FVector& Direction) const;
 
+	void PlayHitEffect(FTransform HitTransform);
+
+	UFUNCTION()
+	void OnBulletHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, FVector NormalImpulse,
+		const FHitResult& Hit);
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<class USphereComponent> SphereCollision;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	TObjectPtr<class UStaticMeshComponent> meshComponent;
-	
+	TObjectPtr<class UStaticMeshComponent> MeshComponent;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<class UProjectileMovementComponent> MovementComponent;
+
+	UPROPERTY(EditAnywhere, Category = HitEffect)
+	TObjectPtr<class UParticleSystem> HitEffect;
 
 	UPROPERTY(EditAnywhere, Category = Properties)
 	float InitSpeed = 30000.0f;

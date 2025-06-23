@@ -22,11 +22,15 @@ public:
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
 public:
+	void PlayReloadMontage();
 	void PlayFireMontage();
 
 protected:
 	UPROPERTY(BlueprintReadOnly,EditAnywhere, Category = Montage)
 	TObjectPtr<class UAnimMontage> FireMontage;
+protected:
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Montage)
+	TObjectPtr<class UAnimMontage> ReloadMontage;
 
 protected:
 	UPROPERTY(BlueprintReadOnly)
