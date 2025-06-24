@@ -37,9 +37,6 @@ public:
 	void FinishReloading();
 
 protected:
-	UPROPERTY();
-
-protected:
 	UPROPERTY(EditAnywhere, Category = Weapon)
 	TSubclassOf<class AWeapon> WeaponClass;
 
